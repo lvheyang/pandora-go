@@ -19,40 +19,40 @@ $ go get -u github.com/lvheyang/pandora-go
 package main
 
 import (
-  "fmt"
-  "github.com/lvheyang/pandora-go"
-  "os"
-  "time"
+	"github.com/lvheyang/pandora-go"
+	"os"
+	"time"
 )
 
 func main() {
-  l, err := pandora.New(
-  		"fake-token",
-  		SetDebug(os.Stderr),
-  		SetUrl("http://localhost:9999/api/v1/data"),
-  		SetDrainDuration(time.Minute*10),
-        SetSetTempDirectory("myQueue"),
-        SetDrainDiskThreshold(99)) // token is required
-  if err != nil {
-    panic(err)
-  }
-  msg := pandora.PandoraReqBody{
-    Raw:"",        //必填，原始日志
-    SourceType:"", //必填，来源类型
-    Repo:"",       //必填，仓库
-    Host:"",       //选填，Host地址
-    Origin:"",     //选填，来源
-    Timestamp:0,   //选填，事件时间
-    CollectTime:0, //选填，收集时间
-  }
+	l, err := pandora.New(
+		"fake-token",
+		pandora.SetDebug(os.Stderr),
+		pandora.SetUrl("http://pandora-express-rc.qiniu.io/api/v1/data"),
+		pandora.SetDrainDuration(time.Second*10),
+		pandora.SetTempDirectory("myQueue"),
+		pandora.SetDrainDiskThreshold(99)) // token is required
+	if err != nil {
+		panic(err)
+	}
+	msg := pandora.PandoraReqBody{
+		Raw:         "{\"a\":\"lllllll\"}", //必填，原始日志
+		SourceType:  "json", //必填，来源类型
+		Repo:        "default", //必填，仓库
+		Host:        "", //选填，Host地址
+		Origin:      "", //选填，来源
+		Timestamp:   0,  //选填，事件时间
+		CollectTime: 0,  //选填，收集时间
+	}
 
-  err = l.SendData(msg)
-  if err != nil {
-     panic(err)
-  }
+	err = l.SendData(msg)
+	if err != nil {
+		panic(err)
+	}
 
-  l.Stop() //logs are buffered on disk. Stop will drain the buffer
+	l.Stop() //logs are buffered on disk. Stop will drain the buffer
 }
+
 ```
 
 ## Usage
