@@ -331,8 +331,8 @@ func (l *PandoraSender) dequeueUpToMaxBatchSize() int {
 		} else {
 			break
 		}
-		l.buf.Write([]byte{']'})
 	}
+	l.buf.Write([]byte{']'})
 	return bufSize
 }
 
