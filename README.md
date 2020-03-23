@@ -29,17 +29,24 @@ func main() {
   l, err := pandora.New(
   		"fake-token",
   		SetDebug(os.Stderr),
-  		SetUrl("http://localhost:12345"),
+  		SetUrl("http://localhost:9999/api/v1/data"),
   		SetDrainDuration(time.Minute*10),
         SetSetTempDirectory("myQueue"),
-        SetDrainDiskThreshold(99)
-  	) // token is required
+        SetDrainDiskThreshold(99)) // token is required
   if err != nil {
     panic(err)
   }
-  msg := fmt.Sprintf("{ \"%s\": \"%s\"}", "message", time.Now().UnixNano())
+  msg := pandora.PandoraReqBody{
+    Raw:"",        //必填，原始日志
+    SourceType:"", //必填，来源类型
+    Repo:"",       //必填，仓库
+    Host:"",       //选填，Host地址
+    Origin:"",     //选填，来源
+    Timestamp:0,   //选填，事件时间
+    CollectTime:0, //选填，收集时间
+  }
 
-  err = l.Send([]byte(msg))
+  err = l.SendData(msg)
   if err != nil {
      panic(err)
   }
