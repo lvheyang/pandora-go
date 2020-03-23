@@ -64,6 +64,16 @@ type PandoraSender struct {
 	httpTransport     *http.Transport
 }
 
+type PandoraReqBody struct {
+	Raw         string `json:"raw"`
+	SourceType  string `json:"sourcetype"`
+	Repo        string `json:"repo"`
+	Host        string `json:"host"`
+	Origin      string `json:"origin"`
+	Timestamp   int64  `json:"timestamp"`
+	CollectTime int64  `json:"collectTime"`
+}
+
 // SenderOptionFunc options for sender
 type SenderOptionFunc func(*PandoraSender) error
 
@@ -207,7 +217,7 @@ func (l *PandoraSender) Stop() {
 }
 
 func (l *PandoraSender) tryToSendLogs() int {
-	resp, err := l.httpClient.Post(l.url, "text/plain", l.buf)
+	resp, err := l.httpClient.Post(l.url, "application/json", l.buf)
 	if err != nil {
 		l.debugLog("pandorasender.go: Error sending logs to %s %s\n", l.url, err)
 		return httpError
@@ -287,6 +297,7 @@ func (l *PandoraSender) dequeueUpToMaxBatchSize() int {
 		bufSize int
 		err     error
 	)
+	l.buf.Write([]byte{'['})
 	for bufSize < maxSize && err == nil {
 		item, err := l.queue.Dequeue()
 		if err != nil {
@@ -297,16 +308,20 @@ func (l *PandoraSender) dequeueUpToMaxBatchSize() int {
 			if len(item.Value)+bufSize+1 > maxSize {
 				break
 			}
+			if bufSize > 0 {
+				l.buf.Write([]byte{','})
+			}
 			bufSize += len(item.Value)
 			l.debugLog("pandorasender.go: Adding item %d with size %d (total buffSize: %d)\n",
 				item.ID, len(item.Value), bufSize)
-			_, err := l.buf.Write(append(item.Value, '\n'))
+			_, err := l.buf.Write(item.Value)
 			if err != nil {
 				l.errorLog("error writing to buffer %s", err)
 			}
 		} else {
 			break
 		}
+		l.buf.Write([]byte{']'})
 	}
 	return bufSize
 }
