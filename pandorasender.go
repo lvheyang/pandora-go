@@ -333,7 +333,6 @@ func (l *PandoraSender) dequeueUpToMaxBatchSize() int {
 		}
 	}
 	l.buf.Write([]byte{']'})
-	l.debugLog("-------- body is %v", string(l.buf.Bytes()))
 	return bufSize
 }
 
