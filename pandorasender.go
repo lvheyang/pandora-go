@@ -17,6 +17,7 @@ package pandora
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -196,13 +197,22 @@ func (l *PandoraSender) isEnoughDiskSpace() {
 	}
 }
 
-// Send the payload to logz.io
+// Send the payload to Pandora
 func (l *PandoraSender) Send(payload []byte) error {
 	if !l.fullDisk {
 		_, err := l.queue.Enqueue(payload)
 		return err
 	}
 	return nil
+}
+
+// Send reqbody to Pandora
+func (l *PandoraSender) SendData(body PandoraReqBody) error {
+	payload, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+	return l.Send(payload)
 }
 
 func (l *PandoraSender) start() {
